@@ -6,11 +6,14 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: alhamzi
     steps:
       - uses: actions/checkout@v4
+      - name: Put uploaded files in place
+        run: |
+          cp pubspec.yaml alhamzi/pubspec.yaml
+          cp main.dart models.dart state.dart alhamzi/lib/
+          cp source.dart alhamzi/lib/sources/
+          cp home.dart details.dart reader.dart alhamzi/lib/screens/
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -19,11 +22,17 @@ jobs:
         with:
           channel: stable
       - name: Generate platform folders
+        working-directory: alhamzi
         run: flutter create --org com.alhamzi --project-name alhamzi .
       - name: Add INTERNET permission
+        working-directory: alhamzi
         run: sed -i 's#<application#<uses-permission android:name="android.permission.INTERNET"/>\n    <application#' android/app/src/main/AndroidManifest.xml
-      - run: flutter pub get
-      - run: flutter build apk --release
+      - name: Get packages
+        working-directory: alhamzi
+        run: flutter pub get
+      - name: Build APK
+        working-directory: alhamzi
+        run: flutter build apk --release
       - uses: actions/upload-artifact@v4
         with:
           name: alhamzi-apk
